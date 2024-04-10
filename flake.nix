@@ -21,6 +21,13 @@
       pkgs = nixpkgs.legacyPackages.${system};
 
       manifest = pkgs.lib.importTOML ./Cargo.toml;
+      cargo-steel-lib = pkgs.rustPlatform.buildRustPackage rec {
+        pname = "cargo-steel-lib";
+        version = manifest.workspace.package.version;
+        src = gitignoreSource ./.;
+        cargoLock.lockFile = ./Cargo.lock;
+        buildAndTestSubdir = "crates/cargo-steel-lib";
+      };
       steel = with pkgs;
         rustPlatform.buildRustPackage rec {
           pname = manifest.package.name;
@@ -29,6 +36,7 @@
           cargoLock.lockFile = ./Cargo.lock;
           buildInputs = [openssl] ++ lib.optionals stdenv.isDarwin [darwin.apple_sdk.frameworks.Security];
           nativeBuildInputs = [
+            cargo-steel-lib
             pkg-config
           ];
           # Test failing
@@ -46,7 +54,11 @@
       legacyPackages = packages;
       defaultPackage = packages.steel;
       devShell = with pkgs; mkShell {
-        buildInputs = [cargo openssl] ++ lib.optionals stdenv.isDarwin [darwin.apple_sdk.frameworks.Security];
+        buildInputs = [
+          cargo
+          cargo-steel-lib
+          openssl
+        ] ++ lib.optionals stdenv.isDarwin [darwin.apple_sdk.frameworks.Security];
         nativeBuildInputs = [
           pkg-config
           rust-analyzer
