@@ -60,11 +60,13 @@
           shellHook = ''
             export STEEL_HOME="${steel}/lib/"
           '';
-          buildInputs = [cargo openssl libiconv] ++ lib.optionals stdenv.isDarwin [
+          buildInputs = [openssl libiconv] ++ lib.optionals stdenv.isDarwin [
             darwin.apple_sdk.frameworks.CoreServices
             darwin.apple_sdk.frameworks.SystemConfiguration
           ];
           nativeBuildInputs = [
+            cargo
+            rustc
             pkg-config
             rust-analyzer
             rustfmt
